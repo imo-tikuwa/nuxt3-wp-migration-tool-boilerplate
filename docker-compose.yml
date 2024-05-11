@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: ./.docker/app/Dockerfile
+    volumes:
+      - ./app:/app:cached
+    ports:
+      - "3000:3000"
+      - "24678:24678"
+    tty: true
+    environment:
+      - MONGODB_URI=mongodb://${MONGO_USER}:${MONGO_PASS}@mongo:27017/${MONGO_INITDB}
+      - CORS_ANYWHERE_ORIGIN=${CORS_ANYWHERE_ORIGIN}
+
+  mongo:
+    build:
+      context: ./
+      dockerfile: ./.docker/mongo/Dockerfile
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_db:/data/db
+      - mongo_configdb:/data/configdb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASS}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB}
+      - MONGO_INITDB_USER=${MONGO_USER}
+      - MONGO_INITDB_PWD=${MONGO_PASS}
+
+  cors-anywhere:
+    build:
+      context: ./.docker/cors-anywhere
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo_db:
+  mongo_configdb:
